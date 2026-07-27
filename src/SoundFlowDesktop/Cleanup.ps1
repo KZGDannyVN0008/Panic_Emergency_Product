@@ -243,7 +243,11 @@ function Invoke-SfdTargetCleanup {
         }
     }
     if ($CredentialScopeAvailable) {
-        $credentialResults = @(Remove-SfdCredentialEntries -Filters @($Target.credential_filters) -Confirm:$false -WhatIf:$WhatIfPreference)
+        $credentialResults = if (@($Target.credential_filters).Count) {
+            @(Remove-SfdCredentialEntries -Filters @($Target.credential_filters) -Confirm:$false -WhatIf:$WhatIfPreference)
+        } else {
+            @()
+        }
         foreach ($credentialResult in $credentialResults) {
             $actions.Add([pscustomobject]@{ Type = 'CREDENTIAL'; Result = $credentialResult.Status; Detail = $credentialResult })
         }
