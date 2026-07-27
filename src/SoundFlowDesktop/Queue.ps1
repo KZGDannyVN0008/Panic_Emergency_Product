@@ -57,7 +57,7 @@ function Write-SfdQueueItems {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][object[]]$Items
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Items
     )
 
     if (-not $Items.Count) {
