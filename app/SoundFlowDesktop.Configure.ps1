@@ -19,6 +19,13 @@ trap {
     Write-SfdBootstrapLog -DataDirectory $DataDirectory -Action 'INSTALL_CONFIGURATION_FAILED' -Message $_.Exception.Message
     exit 1
 }
+# On re-install, the data directory may still exist with ACLs set by a previous
+# installation. Grant the current user full access BEFORE trying to write any
+# files, so Configure.ps1 is never blocked by leftover permission restrictions.
+if ($env:OS -eq 'Windows_NT' -and (Test-Path -LiteralPath $DataDirectory)) {
+    $currentSid = '*' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    icacls.exe $DataDirectory /grant ($currentSid + ':(OI)(CI)F') /T /C | Out-Null
+}
 Import-Module (Join-Path $ProgramDirectory 'src\SoundFlowDesktop\SoundFlowDesktop.psd1') -Force
 $paths = Get-SfdPaths -ProgramDirectory $ProgramDirectory -DataDirectory $DataDirectory
 foreach ($directory in @($paths.Config, $paths.Credentials, $paths.Logs, $paths.Reports, $paths.Queue, $paths.State, $paths.Locks)) {
