@@ -1,0 +1,30 @@
+name: Build unsigned Windows setup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run safe tests
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tests/run.ps1
+      - name: Locate Inno Setup
+        shell: powershell
+        run: |
+          $compiler = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path -LiteralPath $compiler)) { throw 'Inno Setup 6 is unavailable.' }
+          .\installer\build.ps1 -InnoSetupCompiler $compiler
+      - name: Upload unsigned artifact for signing review
+        uses: actions/upload-artifact@v4
+        with:
+          name: soundflow-windows-unsigned
+          path: |
+            installer/output/SoundFlowDesktop-Setup.exe
+            installer/output/SoundFlowDesktop-Setup.exe.sha256
+          if-no-files-found: error

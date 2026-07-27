@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "full_name": "Employee Name",
+  "work_email": "employee@example.com",
+  "department": "Operations",
+  "final_action": "LOGOUT",
+  "lark": {
+    "enabled": true,
+    "webhook_dpapi_file": "credentials\\lark-webhook.dpapi",
+    "app_id": "",
+    "app_secret_dpapi_file": "credentials\\lark-app-secret.dpapi"
+  },
+  "google_sheets": {
+    "enabled": true,
+    "spreadsheet_id": "13IfeDIiDPJlzXBMLrpYDvjqRsoElLLy28y1pBVgjsr0",
+    "tab_name": "Detail_Log",
+    "oauth_client_file": "config\\google-oauth-client.json",
+    "token_dpapi_file": "credentials\\users\\{SID}\\google-token.dpapi"
+  },
+  "update": {
+    "metadata_url": "https://github.com/KZGDannyVN0008/Panic_Emergency_Product/releases/latest/download/update-manifest.json",
+    "trusted_publisher": "KZG",
+    "allow_downgrade": false
+  }
+}

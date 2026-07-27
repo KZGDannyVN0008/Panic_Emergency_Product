@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "version": "1.0.0",
+  "published_at": "2026-07-27T00:00:00Z",
+  "release_notes": "SoundFlow Desktop Windows release",
+  "windows": {
+    "setup_url": "https://github.com/KZGDannyVN0008/Panic_Emergency_Product/releases/download/v1.0.0/SoundFlowDesktop-Setup.exe",
+    "sha256": "REPLACE_WITH_64_CHARACTER_SHA256"
+  }
+}

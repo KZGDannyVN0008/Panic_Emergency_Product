@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "manifest_version": "fixture",
+  "platform": "WINDOWS",
+  "targets": [
+    {
+      "target_id": "fixture.application",
+      "category": "OTHER_APPROVED",
+      "display_name": "Fixture Application",
+      "supported_versions": ["*"],
+      "risk_level": "LOW",
+      "process_names": ["ProcessThatDoesNotExistSfd"],
+      "install_detection": [{"type": "PATH", "value": "%LOCALAPPDATA%\\Fixture\\fixture.exe"}],
+      "approved_data_paths": ["%LOCALAPPDATA%\\Fixture\\Session"],
+      "credential_filters": [],
+      "cleanup_strategy": "CLEAR_APPROVED_PATHS",
+      "verification_strategy": "PATHS_ABSENT_AND_PROCESSES_STOPPED",
+      "timeout_seconds": 10,
+      "uninstall_allowed": false,
+      "uninstall_method": null,
+      "protected_paths": [],
+      "exclusions": []
+    }
+  ]
+}

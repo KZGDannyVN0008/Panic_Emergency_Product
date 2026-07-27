@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "protected_environment_roots": [
+    "SYSTEMROOT",
+    "PROGRAMFILES",
+    "PROGRAMFILES(X86)",
+    "PROGRAMDATA",
+    "SYSTEMDRIVE",
+    "USERPROFILE",
+    "APPDATA",
+    "LOCALAPPDATA"
+  ],
+  "protected_literal_paths": [
+    "C:\\Windows",
+    "C:\\Program Files",
+    "C:\\Program Files (x86)",
+    "C:\\ProgramData\\SoundFlowDesktop"
+  ],
+  "protected_target_patterns": [
+    "(?i)antivirus",
+    "(?i)endpoint detection",
+    "(?i)EDR",
+    "(?i)MDM",
+    "(?i)device management",
+    "(?i)driver"
+  ]
+}

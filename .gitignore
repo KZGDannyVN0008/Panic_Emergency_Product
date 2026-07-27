@@ -1,0 +1,33 @@
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+
+# Deployment secrets and local authorization material
+config/deployment.json
+config/google-oauth-client.json
+*.token
+*.secrets.json
+
+# Runtime state
+data/
+logs/
+reports/
+queue/
+state/
+*.log
+*.jsonl
+
+# Generated build output
+artifacts/
+dist/
+installer/output/
+installer/staging/
+TestResults/
+tmp/
+*.exe
+*.msi
+*.zip
+*.sha256
