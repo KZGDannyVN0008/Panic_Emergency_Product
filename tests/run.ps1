@@ -69,10 +69,10 @@ try {
         [pscustomobject]@{ code = 0 }
     }
     $script:SfdMockFailure = $false
-    $larkSuccess = Invoke-SfdLarkSummary -WebhookUrl 'https://open.larksuite.com/open-apis/bot/v2/hook/00000000-0000-0000-0000-000000000000' -Title 'Fixture' -Summary 'Safe test'
+    $larkSuccess = Invoke-SfdLarkSummary -WebhookUrl 'https://open.larksuite.com/open-apis/bot/v2/hook/fixture-token-not-secret' -Title 'Fixture' -Summary 'Safe test'
     Assert-Sfd $larkSuccess.Delivered 'Lark summary success boundary is exercised with a mock'
     $script:SfdMockFailure = $true
-    $larkFailure = Invoke-SfdLarkSummary -WebhookUrl 'https://open.larksuite.com/open-apis/bot/v2/hook/00000000-0000-0000-0000-000000000000' -Title 'Fixture' -Summary 'Safe test' -Attempts 1
+    $larkFailure = Invoke-SfdLarkSummary -WebhookUrl 'https://open.larksuite.com/open-apis/bot/v2/hook/fixture-token-not-secret' -Title 'Fixture' -Summary 'Safe test' -Attempts 1
     Assert-Sfd (-not $larkFailure.Delivered -and $larkFailure.Status -eq 'QUEUED') 'Lark summary failure returns a queueable result'
     Remove-Item Function:\Invoke-RestMethod -Force
 

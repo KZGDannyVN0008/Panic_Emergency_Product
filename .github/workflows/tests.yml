@@ -15,4 +15,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run safe test suite
         shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File tests/run.ps1
+        run: |
+          $output = & powershell -NoProfile -ExecutionPolicy Bypass -File tests/run.ps1 *>&1 | Out-String
+          Write-Host $output
+          if ($LASTEXITCODE -ne 0) {
+            $annotation = $output.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Windows test failure::$annotation"
+            exit $LASTEXITCODE
+          }
