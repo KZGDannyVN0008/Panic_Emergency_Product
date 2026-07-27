@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$InnoSetupCompiler,
-    [string]$OAuthClientPath,
+    [string]$GoogleWebAppUrl = $env:SOUNDFLOW_GOOGLE_WEBAPP_URL,
     [string]$LarkWebhook = $env:SOUNDFLOW_LARK_WEBHOOK,
     [switch]$RequireLarkWebhook,
     [string]$SignTool,
@@ -14,10 +14,11 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $scriptPath = Join-Path $PSScriptRoot 'SoundFlowDesktop.iss'
 $staging = Join-Path $PSScriptRoot 'staging'
 New-Item -ItemType Directory -Path $staging -Force | Out-Null
-if ($OAuthClientPath) {
-    $oauth = Get-Content -LiteralPath $OAuthClientPath -Raw | ConvertFrom-Json
-    if (-not $oauth.installed.client_id) { throw 'An installed-desktop Google OAuth client is required.' }
-    Copy-Item -LiteralPath $OAuthClientPath -Destination (Join-Path $staging 'google-oauth-client.json') -Force
+if ($GoogleWebAppUrl) {
+    if ($GoogleWebAppUrl -notmatch '^https://script\.google\.com/') {
+        throw 'SOUNDFLOW_GOOGLE_WEBAPP_URL must be a Google Apps Script web app URL.'
+    }
+    Set-Content -LiteralPath (Join-Path $staging 'google-webapp-url.txt') -Value $GoogleWebAppUrl -Encoding Ascii
 }
 if ($LarkWebhook) {
     if ($LarkWebhook -notmatch '^https://open\.larksuite\.com/open-apis/bot/v2/hook/[A-Za-z0-9-]+$') {
@@ -41,6 +42,6 @@ try {
     Set-Content -LiteralPath ($setup + '.sha256') -Value ($hash + '  SoundFlowDesktop-Setup.exe') -Encoding Ascii
     Write-Host "Built: $setup"
 } finally {
-    Remove-Item -LiteralPath (Join-Path $staging 'google-oauth-client.json') -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath (Join-Path $staging 'google-webapp-url.txt') -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath (Join-Path $staging 'lark-webhook.txt') -Force -ErrorAction SilentlyContinue
 }

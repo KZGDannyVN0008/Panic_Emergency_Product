@@ -41,7 +41,7 @@ Source: "..\config\protected-paths.json"; DestDir: "{app}\config"; Flags: ignore
 Source: "..\config\uninstall-allowlist.json"; DestDir: "{app}\config"; Flags: ignoreversion
 Source: "..\assets\SoundFlowDesktop.ico"; DestDir: "{app}\assets"; Flags: ignoreversion
 Source: "..\assets\soundflow-icon.png"; DestDir: "{app}\assets"; Flags: ignoreversion
-Source: "staging\google-oauth-client.json"; DestDir: "{localappdata}\SoundFlowDesktop\config"; Flags: ignoreversion skipifsourcedoesntexist uninsneveruninstall
+Source: "staging\google-webapp-url.txt"; DestDir: "{tmp}"; DestName: "soundflow-google-webapp-url.txt"; Flags: ignoreversion skipifsourcedoesntexist deleteafterinstall
 Source: "staging\lark-webhook.txt"; DestDir: "{tmp}"; DestName: "soundflow-lark-webhook.txt"; Flags: ignoreversion skipifsourcedoesntexist deleteafterinstall
 
 [Icons]
@@ -54,7 +54,7 @@ Type: filesandordirs; Name: "{app}\config"; Check: IsUpdateMode
 Type: filesandordirs; Name: "{app}\assets"; Check: IsUpdateMode
 
 [Run]
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\SoundFlowDesktop.Configure.ps1"" -FullName ""{code:GetFullName}"" -WorkEmail ""{code:GetWorkEmail}"" -Department ""{code:GetDepartment}"" -FinalAction ""{code:GetFinalAction}"" -ConnectGoogleSheets -LarkWebhookFile ""{tmp}\soundflow-lark-webhook.txt"" -ProgramDirectory ""{app}"" -DataDirectory ""{localappdata}\SoundFlowDesktop"""; StatusMsg: "Configuring SoundFlow Desktop — please authorize Google Sheets in your browser if a sign-in page opens..."; Flags: runhidden waituntilterminated; Check: not IsUpdateMode
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\SoundFlowDesktop.Configure.ps1"" -FullName ""{code:GetFullName}"" -WorkEmail ""{code:GetWorkEmail}"" -Department ""{code:GetDepartment}"" -FinalAction ""{code:GetFinalAction}"" -GoogleWebAppUrlFile ""{tmp}\soundflow-google-webapp-url.txt"" -LarkWebhookFile ""{tmp}\soundflow-lark-webhook.txt"" -ProgramDirectory ""{app}"" -DataDirectory ""{localappdata}\SoundFlowDesktop"""; StatusMsg: "Configuring SoundFlow Desktop..."; Flags: runhidden waituntilterminated; Check: not IsUpdateMode
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\SoundFlowDesktop.ps1"" -ProgramDirectory ""{app}"" -DataDirectory ""{localappdata}\SoundFlowDesktop"""; Description: "Open SoundFlow Desktop"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]

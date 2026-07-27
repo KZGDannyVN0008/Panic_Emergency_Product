@@ -1,27 +1,31 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][ValidateSet('CONNECT', 'RECONNECT', 'DISCONNECT')][string]$Action,
+    [string]$WebAppUrl,
     [string]$ProgramDirectory = (Join-Path $env:LOCALAPPDATA 'Programs\SoundFlowDesktop'),
-    [string]$DataDirectory = (Join-Path $env:LOCALAPPDATA 'SoundFlowDesktop'),
-    [switch]$Revoke
+    [string]$DataDirectory = (Join-Path $env:LOCALAPPDATA 'SoundFlowDesktop')
 )
 
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $ProgramDirectory 'src\SoundFlowDesktop\SoundFlowDesktop.psd1') -Force
 $configurationPath = Join-Path $DataDirectory 'config\deployment.json'
 $configuration = Import-SfdDeploymentConfiguration -Path $configurationPath -AllowDisconnectedIntegrations
-$tokenPath = Resolve-SfdUserCredentialPath -DataDirectory $DataDirectory -RelativePath ([string]$configuration.google_sheets.token_dpapi_file)
+$credPath = Join-Path $DataDirectory ([string]$configuration.google_sheets.webapp_url_dpapi_file)
 
 if ($Action -eq 'DISCONNECT') {
-    $result = Disconnect-SfdGoogleSheets -TokenPath $tokenPath -Revoke:$Revoke
+    if (Test-Path -LiteralPath $credPath) {
+        Remove-Item -LiteralPath $credPath -Force -ErrorAction SilentlyContinue
+    }
     $configuration.google_sheets.enabled = $false
     Write-SfdJsonAtomic -Path $configurationPath -Value $configuration
-    Write-Host $result.Status
+    Write-Host 'Google Sheets: Not Connected'
     exit 0
 }
 
-$oauthPath = Join-Path $DataDirectory ([string]$configuration.google_sheets.oauth_client_file)
-$result = Connect-SfdGoogleSheets -OAuthClientPath $oauthPath -TokenPath $tokenPath -SpreadsheetId ([string]$configuration.google_sheets.spreadsheet_id) -TabName ([string]$configuration.google_sheets.tab_name)
-$configuration.google_sheets.enabled = [bool]$result.Connected
+if (-not $WebAppUrl) { throw 'A Google Apps Script web app URL is required (-WebAppUrl).' }
+$protected = Protect-SfdDpapiValue -PlainText $WebAppUrl
+New-Item -ItemType Directory -Path (Split-Path -Parent $credPath) -Force | Out-Null
+Set-Content -LiteralPath $credPath -Value $protected -Encoding Ascii
+$configuration.google_sheets.enabled = $true
 Write-SfdJsonAtomic -Path $configurationPath -Value $configuration
-Write-Host $result.Status
+Write-Host 'Google Sheets: Connected'

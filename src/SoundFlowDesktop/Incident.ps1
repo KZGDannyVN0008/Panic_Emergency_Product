@@ -164,8 +164,8 @@ function Invoke-SfdOperationalDelivery {
     $sheetStatus = 'SKIPPED'
     if ($Configuration.google_sheets.enabled) {
         try {
-            $tokenPath = Resolve-SfdUserCredentialPath -DataDirectory $Paths.Data -RelativePath ([string]$Configuration.google_sheets.token_dpapi_file)
-            $null = Write-SfdGoogleSheetEvents -TokenPath $tokenPath -SpreadsheetId ([string]$Configuration.google_sheets.spreadsheet_id) -TabName ([string]$Configuration.google_sheets.tab_name) -Events $Events
+            $webAppUrl = Get-SfdConfigurationSecret -DataDirectory $Paths.Data -RelativePath ([string]$Configuration.google_sheets.webapp_url_dpapi_file)
+            $null = Write-SfdGoogleSheetEvents -WebAppUrl $webAppUrl -TabName ([string]$Configuration.google_sheets.tab_name) -Events $Events
             $sheetStatus = 'SUCCESS'
         } catch {
             $sheetStatus = 'QUEUED'
@@ -207,8 +207,8 @@ function Invoke-SfdConfiguredQueueRetry {
                 return [bool]$result.Delivered
             }
             'GOOGLE_SHEETS' {
-                $tokenPath = Resolve-SfdUserCredentialPath -DataDirectory $Paths.Data -RelativePath ([string]$Configuration.google_sheets.token_dpapi_file)
-                $result = Write-SfdGoogleSheetEvents -TokenPath $tokenPath -SpreadsheetId ([string]$Configuration.google_sheets.spreadsheet_id) -TabName ([string]$Configuration.google_sheets.tab_name) -Events @($item.payload)
+                $webAppUrl = Get-SfdConfigurationSecret -DataDirectory $Paths.Data -RelativePath ([string]$Configuration.google_sheets.webapp_url_dpapi_file)
+                $result = Write-SfdGoogleSheetEvents -WebAppUrl $webAppUrl -TabName ([string]$Configuration.google_sheets.tab_name) -Events @($item.payload)
                 return $result.Status -eq 'SUCCESS'
             }
             default { return $false }
@@ -245,8 +245,8 @@ function Write-SfdDeliveryOutcomeEvents {
     Write-SfdLocalEvents -Path $EventPath -Events $events.ToArray()
     if ($Configuration.google_sheets.enabled) {
         try {
-            $tokenPath = Resolve-SfdUserCredentialPath -DataDirectory $Paths.Data -RelativePath ([string]$Configuration.google_sheets.token_dpapi_file)
-            $null = Write-SfdGoogleSheetEvents -TokenPath $tokenPath -SpreadsheetId ([string]$Configuration.google_sheets.spreadsheet_id) -TabName ([string]$Configuration.google_sheets.tab_name) -Events $events.ToArray()
+            $webAppUrl = Get-SfdConfigurationSecret -DataDirectory $Paths.Data -RelativePath ([string]$Configuration.google_sheets.webapp_url_dpapi_file)
+            $null = Write-SfdGoogleSheetEvents -WebAppUrl $webAppUrl -TabName ([string]$Configuration.google_sheets.tab_name) -Events $events.ToArray()
         } catch {
             $queuePath = Join-Path $Paths.Queue 'delivery.jsonl'
             foreach ($event in $events) {

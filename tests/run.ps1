@@ -85,28 +85,14 @@ try {
     $filePending = Invoke-SfdLarkReportUpload -ReportPath $reportFixture
     Assert-Sfd ($filePending.Status -eq 'PENDING_CREDENTIALS') 'Lark TXT upload never reports delivery without app-bot credentials'
 
-    $tokenPath = Join-Path $temporary 'credentials\google-token.dpapi'
-    New-Item -ItemType Directory -Path (Split-Path -Parent $tokenPath) -Force | Out-Null
-    $tokenJson = [ordered]@{
-        access_token = 'mock-access-token'
-        refresh_token = 'mock-refresh-token'
-        expires_at = [DateTimeOffset]::UtcNow.AddHours(1).ToUnixTimeSeconds()
-        client_id = 'mock-client'
-        token_uri = 'https://oauth2.googleapis.com/token'
-    } | ConvertTo-Json -Compress
-    Set-Content -LiteralPath $tokenPath -Value (Protect-SfdDpapiValue -PlainText $tokenJson) -Encoding Ascii
     $script:SfdGoogleBodies = New-Object System.Collections.Generic.List[string]
     function global:Invoke-RestMethod {
-        param($Uri, $Method, $Headers, $Body, $ContentType, $TimeoutSec, $ErrorAction)
+        param($Uri, $Method, $Body, $ContentType, $TimeoutSec, $ErrorAction)
         if ($Body) { $script:SfdGoogleBodies.Add([string]$Body) }
-        if ($Uri -match '1%3A1') {
-            return [pscustomobject]@{ values = @(@('Custom_Column', 'Event_ID')) }
-        }
-        if ($Uri -match 'B2%3AB') { return [pscustomobject]@{} }
-        [pscustomobject]@{}
+        [pscustomobject]@{ status = 'OK'; written = 1 }
     }
     $sheetEvent = New-SfdEvent -IncidentId 'SFD-SHEET-TEST' -Category SCAN -Action SCAN_TARGET -Status SUCCESS -Mode DRY_RUN -Context @{} -Target @{ Target_Name = 'Fixture' }
-    $sheetWrite = Write-SfdGoogleSheetEvents -TokenPath $tokenPath -SpreadsheetId 'fixture-sheet' -TabName 'Detail_Log' -Events @($sheetEvent)
+    $sheetWrite = Write-SfdGoogleSheetEvents -WebAppUrl 'https://script.google.com/macros/s/fixture/exec' -Events @($sheetEvent)
     Assert-Sfd ($sheetWrite.Written -eq 1) 'Google Sheets append boundary succeeds with mocked HTTP'
     Assert-Sfd (@($script:SfdGoogleBodies | Where-Object { $_ -match [regex]::Escape($sheetEvent.Event_ID) }).Count -eq 1) 'Google Sheets payload contains the stable Event ID once'
     Remove-Item Function:\Invoke-RestMethod -Force

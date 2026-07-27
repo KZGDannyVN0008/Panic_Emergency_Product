@@ -6,9 +6,10 @@ param(
     [ValidateSet('NONE', 'LOGOUT', 'SHUTDOWN')][string]$FinalAction = 'LOGOUT',
     [string]$LarkWebhook,
     [string]$LarkWebhookFile,
+    [string]$GoogleWebAppUrl,
+    [string]$GoogleWebAppUrlFile,
     [string]$ProgramDirectory = (Join-Path $env:LOCALAPPDATA 'Programs\SoundFlowDesktop'),
-    [string]$DataDirectory = (Join-Path $env:LOCALAPPDATA 'SoundFlowDesktop'),
-    [switch]$ConnectGoogleSheets
+    [string]$DataDirectory = (Join-Path $env:LOCALAPPDATA 'SoundFlowDesktop')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -53,8 +54,7 @@ $configuration = [ordered]@{
         enabled = $false
         spreadsheet_id = '13IfeDIiDPJlzXBMLrpYDvjqRsoElLLy28y1pBVgjsr0'
         tab_name = 'Detail_Log'
-        oauth_client_file = 'config\google-oauth-client.json'
-        token_dpapi_file = 'credentials\users\{SID}\google-token.dpapi'
+        webapp_url_dpapi_file = 'credentials\google-webapp-url.dpapi'
     }
     update = [ordered]@{
         metadata_url = 'https://github.com/KZGDannyVN0008/Panic_Emergency_Product/releases/latest/download/update-manifest.json'
@@ -70,29 +70,24 @@ if ($LarkWebhook) {
     $protectedWebhook = Protect-SfdDpapiValue -PlainText $LarkWebhook
     Set-Content -LiteralPath (Join-Path $paths.Data $configuration.lark.webhook_dpapi_file) -Value $protectedWebhook -Encoding Ascii
 }
+if (-not $GoogleWebAppUrl -and $GoogleWebAppUrlFile -and (Test-Path -LiteralPath $GoogleWebAppUrlFile -PathType Leaf)) {
+    $GoogleWebAppUrl = (Get-Content -LiteralPath $GoogleWebAppUrlFile -Raw -Encoding Ascii).Trim()
+}
 if ($LarkWebhookFile -and (Test-Path -LiteralPath $LarkWebhookFile)) {
     Remove-Item -LiteralPath $LarkWebhookFile -Force -ErrorAction SilentlyContinue
 }
-Write-SfdJsonAtomic -Path (Join-Path $paths.Config 'deployment.json') -Value $configuration
-
-if ($ConnectGoogleSheets) {
-    $oauthClientPath = Join-Path $paths.Data $configuration.google_sheets.oauth_client_file
-    if (Test-Path -LiteralPath $oauthClientPath) {
-        try {
-            $tokenPath = Resolve-SfdUserCredentialPath -DataDirectory $paths.Data -RelativePath $configuration.google_sheets.token_dpapi_file
-            $connection = Connect-SfdGoogleSheets -OAuthClientPath $oauthClientPath -TokenPath $tokenPath -SpreadsheetId $configuration.google_sheets.spreadsheet_id -TabName $configuration.google_sheets.tab_name
-            if ($connection.Connected) {
-                $configuration.google_sheets.enabled = $true
-                Write-SfdJsonAtomic -Path (Join-Path $paths.Config 'deployment.json') -Value $configuration
-                Write-Host 'Google Sheets: Connected'
-            }
-        } catch {
-            Write-Warning ('Google Sheets: Not Connected. ' + (Protect-SfdSecretText -Text $_.Exception.Message))
-        }
-    } else {
-        Write-Warning 'Google Sheets: Not Connected. The deployment OAuth client was not included.'
-    }
+if ($GoogleWebAppUrlFile -and (Test-Path -LiteralPath $GoogleWebAppUrlFile)) {
+    Remove-Item -LiteralPath $GoogleWebAppUrlFile -Force -ErrorAction SilentlyContinue
 }
+if ($GoogleWebAppUrl) {
+    $protectedUrl = Protect-SfdDpapiValue -PlainText $GoogleWebAppUrl
+    $credDir = Split-Path -Parent (Join-Path $paths.Data $configuration.google_sheets.webapp_url_dpapi_file)
+    New-Item -ItemType Directory -Path $credDir -Force | Out-Null
+    Set-Content -LiteralPath (Join-Path $paths.Data $configuration.google_sheets.webapp_url_dpapi_file) -Value $protectedUrl -Encoding Ascii
+    $configuration.google_sheets.enabled = $true
+    Write-Host 'Google Sheets: Connected'
+}
+Write-SfdJsonAtomic -Path (Join-Path $paths.Config 'deployment.json') -Value $configuration
 
 # Restrict writable application state to administrators, SYSTEM, and the
 # installing Windows user. Use the SID to avoid DOMAIN\username resolution

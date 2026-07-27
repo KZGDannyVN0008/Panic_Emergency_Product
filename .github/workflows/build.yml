@@ -39,17 +39,11 @@ jobs:
         shell: powershell
         env:
           SOUNDFLOW_LARK_WEBHOOK: ${{ secrets.SOUNDFLOW_LARK_WEBHOOK }}
-          SOUNDFLOW_GOOGLE_OAUTH_CLIENT_B64: ${{ secrets.SOUNDFLOW_GOOGLE_OAUTH_CLIENT }}
+          SOUNDFLOW_GOOGLE_WEBAPP_URL: ${{ secrets.SOUNDFLOW_GOOGLE_WEBAPP_URL }}
         run: |
           $compiler = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path -LiteralPath $compiler)) { throw 'Inno Setup 6 is unavailable.' }
-          $buildArgs = @('-InnoSetupCompiler', $compiler, '-RequireLarkWebhook')
-          if ($env:SOUNDFLOW_GOOGLE_OAUTH_CLIENT_B64) {
-            $oauthPath = Join-Path $env:RUNNER_TEMP 'google-oauth-client.json'
-            [IO.File]::WriteAllBytes($oauthPath, [Convert]::FromBase64String($env:SOUNDFLOW_GOOGLE_OAUTH_CLIENT_B64))
-            $buildArgs += @('-OAuthClientPath', $oauthPath)
-          }
-          .\installer\build.ps1 @buildArgs
+          .\installer\build.ps1 -InnoSetupCompiler $compiler -RequireLarkWebhook
       - name: Upload unsigned artifact for signing review
         uses: actions/upload-artifact@v4
         with:

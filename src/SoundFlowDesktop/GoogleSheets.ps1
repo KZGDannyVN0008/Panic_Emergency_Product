@@ -12,6 +12,57 @@ $script:SfdSheetColumns = @(
     'Duration_Seconds'
 )
 
+# Google Sheets integration uses a Google Apps Script Web App deployed as
+# "Anyone can access". No OAuth or user sign-in is required. The Web App URL
+# acts as a secret endpoint (like the Lark webhook) and must be stored
+# DPAPI-encrypted in credentials\google-webapp-url.dpapi.
+#
+# Minimal Apps Script to deploy (doPost):
+#
+#   function doPost(e) {
+#     try {
+#       var d = JSON.parse(e.postData.contents);
+#       var ss = SpreadsheetApp.getActiveSpreadsheet();
+#       var sh = ss.getSheetByName(d.tab || 'Detail_Log') || ss.getSheets()[0];
+#       if (!sh.getLastRow()) sh.appendRow(d.columns);
+#       d.rows.forEach(function(r) { sh.appendRow(r); });
+#       return ContentService.createTextOutput(JSON.stringify({status:'OK',written:d.rows.length}))
+#         .setMimeType(ContentService.MimeType.JSON);
+#     } catch(err) {
+#       return ContentService.createTextOutput(JSON.stringify({status:'ERROR',message:err.toString()}))
+#         .setMimeType(ContentService.MimeType.JSON);
+#     }
+#   }
+#
+# Deploy as: Execute as → Me, Who has access → Anyone.
+
+function Write-SfdGoogleSheetEvents {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$WebAppUrl,
+        [Parameter(Mandatory = $true)][object[]]$Events,
+        [string]$TabName = 'Detail_Log'
+    )
+
+    $rows = @($Events | ForEach-Object {
+        $ev = $_
+        [object[]]@($script:SfdSheetColumns | ForEach-Object {
+            if ($ev.PSObject.Properties[$_]) { [string]$ev.$_ } else { '' }
+        })
+    })
+    $payload = [ordered]@{
+        tab     = $TabName
+        columns = [object[]]$script:SfdSheetColumns
+        rows    = [object[]]$rows
+    } | ConvertTo-Json -Depth 5 -Compress
+    $null = Invoke-RestMethod -Uri $WebAppUrl -Method Post -Body $payload `
+        -ContentType 'application/json; charset=utf-8' -TimeoutSec 30 -ErrorAction Stop
+    [pscustomobject]@{ Written = $Events.Count; Status = 'SUCCESS' }
+}
+
+# --- Legacy stubs kept so that old code paths that reference these names do
+#     not cause parse errors; they will be removed in a future cleanup pass.
+
 function ConvertTo-SfdBase64Url {
     [CmdletBinding()]
     param([Parameter(Mandatory = $true)][byte[]]$Bytes)
