@@ -128,6 +128,7 @@ try {
         approved_data_paths = @('C:\Fixture\DoesNotExist')
         credential_filters = @()
         cleanup_strategy = 'CLEAR_APPROVED_PATHS'
+        verification_strategy = 'PATH_ABSENT'
     }
     $cleanup = Invoke-SfdTargetCleanup -Target $fixtureTarget -EnvironmentMap $environmentMap -ProtectedPaths @('C:\Windows') -WhatIf -Confirm:$false
     Assert-Sfd ($cleanup.Result -eq 'CLEANED') 'WhatIf cleanup exercises the boundary without stopping processes or deleting data'
