@@ -35,6 +35,7 @@ function Protect-SfdDpapiValue {
     param([Parameter(Mandatory = $true)][string]$PlainText)
 
     if ($env:OS -ne 'Windows_NT') { throw 'Windows DPAPI is only available on Windows.' }
+    Add-Type -AssemblyName System.Security -ErrorAction Stop
     $bytes = [Text.Encoding]::UTF8.GetBytes($PlainText)
     $protected = [System.Security.Cryptography.ProtectedData]::Protect(
         $bytes,
@@ -49,6 +50,7 @@ function Unprotect-SfdDpapiValue {
     param([Parameter(Mandatory = $true)][string]$ProtectedText)
 
     if ($env:OS -ne 'Windows_NT') { throw 'Windows DPAPI is only available on Windows.' }
+    Add-Type -AssemblyName System.Security -ErrorAction Stop
     $bytes = [Convert]::FromBase64String($ProtectedText)
     $plain = [System.Security.Cryptography.ProtectedData]::Unprotect(
         $bytes,
