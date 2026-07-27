@@ -186,14 +186,15 @@ try {
 $sourceText = (Get-ChildItem -LiteralPath $repositoryRoot -Recurse -File |
     Where-Object { $_.Extension -in @('.ps1', '.psm1', '.psd1', '.json', '.md', '.iss') } |
     ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join "`n"
+$installerText = Get-Content -LiteralPath (Join-Path $repositoryRoot 'installer\SoundFlowDesktop.iss') -Raw
 Assert-Sfd ($sourceText -notmatch 'open\.larksuite\.com/open-apis/bot/v2/hook/[0-9a-f]{8}-[0-9a-f-]{20,}') 'No real Lark webhook is present in source'
 Assert-Sfd ($sourceText -match 'PRODUCTION_STARTED') 'Production-started alert is implemented'
 Assert-Sfd ($sourceText -match 'DRY_RUN_STARTED') 'DRY RUN start notification is implemented'
 Assert-Sfd ($sourceText -match 'APP_INSTALL' -and $sourceText -match 'APP_UNINSTALL') 'Install and uninstall lifecycle notifications are implemented'
 Assert-Sfd ($sourceText -match 'UPDATE STARTED' -and $sourceText -match 'UPDATE COMPLETED' -and $sourceText -match 'UPDATE FAILED') 'Update lifecycle notifications are implemented'
-Assert-Sfd ($sourceText -match 'PrivilegesRequired=lowest') 'Setup uses the per-user no-UAC installation model'
+Assert-Sfd ($installerText -match 'PrivilegesRequired=lowest') 'Setup uses the per-user no-UAC installation model'
 Assert-Sfd ($sourceText -match 'SOUNDFLOW_LARK_WEBHOOK') 'Setup receives Lark configuration only through protected build injection'
-Assert-Sfd ($sourceText -notmatch 'WebhookPage' -and $sourceText -notmatch 'IdentityPage') 'Setup does not ask testers for identity or webhook values'
+Assert-Sfd ($installerText -notmatch 'WebhookPage' -and $installerText -notmatch 'IdentityPage') 'Setup does not ask testers for identity or webhook values'
 Assert-Sfd ($sourceText -match 'application\.log') 'Bootstrap failures and run status are always logged locally'
 Assert-Sfd ($sourceText -match 'Get-AuthenticodeSignature') 'Updater checks the trusted package signature'
 Assert-Sfd ($sourceText -match 'Get-FileHash.+SHA256') 'Updater checks the package checksum'
