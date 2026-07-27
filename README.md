@@ -34,3 +34,19 @@ disposable Windows VM snapshot. The repository never contains the Lark webhook,
 Google user tokens, or a real OAuth client configuration.
 
 See `docs/installation.md` and `docs/testing.md`.
+
+## Windows tester distribution
+
+Testers receive one file:
+
+```text
+SoundFlowDesktop-Setup.exe
+```
+
+The developer can send that installer through Google Drive or chat. Testers do
+not need the source repository, checksum file, configuration templates, or
+build scripts. The current hosted test build is unsigned, so Windows may show
+**Unknown publisher**, and managed devices may block installation according to
+their security policy.
+
+Give testers the standalone instructions in `HOW_TO_USE.md`.
