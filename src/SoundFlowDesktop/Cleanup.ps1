@@ -213,7 +213,7 @@ function Invoke-SfdTargetCleanup {
         }
     }
     $stopwatch = [Diagnostics.Stopwatch]::StartNew()
-    $timeoutSeconds = if ($Target.PSObject.Properties.Name -contains 'timeout_seconds') { [int]$Target.timeout_seconds } else { 60 }
+    $timeoutSeconds = if ($Target.PSObject.Properties['timeout_seconds']) { [int]$Target.timeout_seconds } else { 60 }
     $actions = New-Object System.Collections.Generic.List[object]
     $processResult = if ($WhatIfPreference) {
         [pscustomobject]@{ Success = $true; Failures = @(); Remaining = @() }

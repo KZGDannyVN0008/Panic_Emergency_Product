@@ -33,7 +33,7 @@ function New-SfdTextReport {
         foreach ($location in @($target.Locations | Where-Object { $_.Exists })) {
             $lines.Add(('  PATH | {0} | files={1} | estimated_mb={2:N2}' -f $location.Path, $location.Files, ([double]$location.Bytes / 1MB)))
         }
-        if ($target.PSObject.Properties.Name -contains 'CloudSyncState' -and $target.CloudSyncState) {
+        if ($target.PSObject.Properties['CloudSyncState'] -and $target.CloudSyncState) {
             foreach ($account in @($target.CloudSyncState.Accounts)) {
                 $lines.Add(('  CLOUD SYNC | account_type={0} | root={1} | actively_syncing={2}' -f $account.AccountType, $account.SyncRoot, $account.ActivelySyncing))
             }

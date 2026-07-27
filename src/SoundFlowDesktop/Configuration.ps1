@@ -11,7 +11,7 @@ function Import-SfdDeploymentConfiguration {
     $errors = New-Object System.Collections.Generic.List[string]
 
     foreach ($field in @('full_name', 'work_email', 'department', 'final_action')) {
-        if (-not ($config.PSObject.Properties.Name -contains $field) -or -not [string]$config.$field) {
+        if (-not $config.PSObject.Properties[$field] -or -not [string]$config.$field) {
             $errors.Add("Missing configuration field: $field")
         }
     }

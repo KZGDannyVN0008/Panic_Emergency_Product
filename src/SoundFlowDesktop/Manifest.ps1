@@ -27,7 +27,7 @@ function Test-SfdTargetManifest {
     $seen = @{}
     foreach ($target in @($Manifest.targets)) {
         foreach ($field in $required) {
-            if (-not ($target.PSObject.Properties.Name -contains $field)) {
+            if (-not $target.PSObject.Properties[$field]) {
                 $errors.Add("Target '$($target.target_id)' is missing '$field'.")
             }
         }

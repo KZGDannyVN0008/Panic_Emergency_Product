@@ -5,8 +5,8 @@ function Test-SfdLarkResponse {
     param($Response)
 
     if ($null -eq $Response) { return $false }
-    if ($Response.PSObject.Properties.Name -contains 'code' -and [int]$Response.code -eq 0) { return $true }
-    if ($Response.PSObject.Properties.Name -contains 'StatusCode' -and [int]$Response.StatusCode -eq 0) { return $true }
+    if ($Response.PSObject.Properties['code'] -and [int]$Response.code -eq 0) { return $true }
+    if ($Response.PSObject.Properties['StatusCode'] -and [int]$Response.StatusCode -eq 0) { return $true }
     $false
 }
 

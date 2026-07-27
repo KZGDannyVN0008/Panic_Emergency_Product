@@ -234,7 +234,7 @@ function Ensure-SfdGoogleSheetHeaders {
     $uri = 'https://sheets.googleapis.com/v4/spreadsheets/' + $SpreadsheetId + '/values/' + $range
     $existingResponse = Invoke-SfdGoogleApi -Method Get -Uri $uri -TokenPath $TokenPath
     $headers = @()
-    if ($existingResponse.PSObject.Properties.Name -contains 'values' -and $existingResponse.values -and @($existingResponse.values).Count) {
+    if ($existingResponse.PSObject.Properties['values'] -and $existingResponse.values -and @($existingResponse.values).Count) {
         $headers = @($existingResponse.values[0] | ForEach-Object { [string]$_ })
     }
     $changed = $false
@@ -274,7 +274,7 @@ function Write-SfdGoogleSheetEvents {
     $eventIdUri = 'https://sheets.googleapis.com/v4/spreadsheets/' + $SpreadsheetId + '/values/' + $eventIdRange
     $existingIdsResponse = Invoke-SfdGoogleApi -Method Get -Uri $eventIdUri -TokenPath $TokenPath
     $existingIds = New-Object System.Collections.Generic.HashSet[string]
-    if ($existingIdsResponse.PSObject.Properties.Name -contains 'values') {
+    if ($existingIdsResponse.PSObject.Properties['values']) {
         foreach ($row in @($existingIdsResponse.values)) {
             if (@($row).Count -and [string]$row[0]) { $null = $existingIds.Add([string]$row[0]) }
         }
@@ -284,7 +284,7 @@ function Write-SfdGoogleSheetEvents {
         if ($existingIds.Contains([string]$event.Event_ID)) { continue }
         $row = New-Object System.Collections.Generic.List[object]
         foreach ($header in $headers) {
-            if ($event.PSObject.Properties.Name -contains $header) { $row.Add($event.$header) } else { $row.Add('') }
+            if ($event.PSObject.Properties[$header]) { $row.Add($event.$header) } else { $row.Add('') }
         }
         $rows.Add([object[]]$row.ToArray())
     }
