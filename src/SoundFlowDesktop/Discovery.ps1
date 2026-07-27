@@ -72,7 +72,7 @@ function Get-SfdInstalledApplications {
             }
         }
     }
-    @($applications)
+    $applications.ToArray()
 }
 
 function Get-SfdPathStatistics {
@@ -108,7 +108,7 @@ function Get-SfdPathStatistics {
             } else { $files++; $bytes += [int64]$item.Length }
         }
     } catch {}
-    [pscustomobject]@{ Exists = $true; Files = $files; Directories = $directories; Bytes = $bytes; Profiles = $profileNames.Count; ProfileNames = @($profileNames); TimedOut = $timedOut }
+    [pscustomobject]@{ Exists = $true; Files = $files; Directories = $directories; Bytes = $bytes; Profiles = $profileNames.Count; ProfileNames = @($profileNames | ForEach-Object { $_ }); TimedOut = $timedOut }
 }
 
 function Test-SfdInstallRule {
@@ -194,8 +194,8 @@ function Get-SfdOneDriveState {
         if ($stopwatch.Elapsed.TotalSeconds -ge 5) { break }
     }
     [pscustomobject]@{
-        Accounts = @($accounts)
-        KnownFolderMove = @($knownFolderMove)
+        Accounts = $accounts.ToArray()
+        KnownFolderMove = $knownFolderMove.ToArray()
         PlaceholderCount = $placeholderCount
         Status = if ($accounts.Count) { 'DETECTED' } else { 'NOT_DETECTED' }
     }
@@ -275,7 +275,7 @@ function Invoke-SfdDiscovery {
             Installed = $installed
             Running = ($running.Count -gt 0)
             RunningProcessIds = @($running | ForEach-Object { $_.Id })
-            Locations = @($locations)
+            Locations = $locations.ToArray()
             Result = if ($installed -or $running.Count -or @($locations | Where-Object { $_.Exists }).Count) { 'DETECTED' } else { 'SKIPPED' }
             Supported = ([string]$target.cleanup_strategy -ne 'REPORT_ONLY')
             CloudSyncState = $cloudSyncState
@@ -298,7 +298,7 @@ function Invoke-SfdDiscovery {
             })
         }
     }
-    @($results)
+    $results.ToArray()
 }
 
 function Get-SfdAccessibleUserProfiles {
@@ -317,5 +317,5 @@ function Get-SfdAccessibleUserProfiles {
             if (-not $profiles.Contains($full)) { $profiles.Add($full) }
         }
     } catch {}
-    @($profiles)
+    $profiles.ToArray()
 }

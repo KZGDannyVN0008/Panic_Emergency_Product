@@ -242,11 +242,11 @@ function Write-SfdDeliveryOutcomeEvents {
         }
         $events.Add($event)
     }
-    Write-SfdLocalEvents -Path $EventPath -Events @($events)
+    Write-SfdLocalEvents -Path $EventPath -Events $events.ToArray()
     if ($Configuration.google_sheets.enabled) {
         try {
             $tokenPath = Resolve-SfdUserCredentialPath -DataDirectory $Paths.Data -RelativePath ([string]$Configuration.google_sheets.token_dpapi_file)
-            $null = Write-SfdGoogleSheetEvents -TokenPath $tokenPath -SpreadsheetId ([string]$Configuration.google_sheets.spreadsheet_id) -TabName ([string]$Configuration.google_sheets.tab_name) -Events @($events)
+            $null = Write-SfdGoogleSheetEvents -TokenPath $tokenPath -SpreadsheetId ([string]$Configuration.google_sheets.spreadsheet_id) -TabName ([string]$Configuration.google_sheets.tab_name) -Events $events.ToArray()
         } catch {
             $queuePath = Join-Path $Paths.Queue 'delivery.jsonl'
             foreach ($event in $events) {
@@ -254,7 +254,7 @@ function Write-SfdDeliveryOutcomeEvents {
             }
         }
     }
-    @($events)
+    $events.ToArray()
 }
 
 function Write-SfdLifecycleEvent {
@@ -349,7 +349,7 @@ function Start-SfdIncident {
                 $beforeList.Add($profileResult)
             }
         }
-        $before = @($beforeList)
+        $before = $beforeList.ToArray()
         foreach ($targetResult in $before) {
             $targetEvent = New-SfdTargetEvent -IncidentId $incidentId -Mode $Mode -Context $context -DiscoveryResult $targetResult
             $events.Add($targetEvent)
@@ -393,7 +393,7 @@ function Start-SfdIncident {
                     $afterList.Add($profileResult)
                 }
             }
-            $after = @($afterList)
+            $after = $afterList.ToArray()
             foreach ($cleanup in $cleanupResults) {
                 $beforeResult = $before | Where-Object { $_.TargetId -eq $cleanup.TargetId -and $_.UserProfile -eq $cleanup.UserProfile } | Select-Object -First 1
                 $afterResult = $after | Where-Object { $_.TargetId -eq $cleanup.TargetId -and $_.UserProfile -eq $cleanup.UserProfile } | Select-Object -First 1
@@ -445,7 +445,7 @@ function Start-SfdIncident {
             $events.Add($systemEvent)
             Write-SfdLocalEvents -Path $eventPath -Events @($systemEvent)
         }
-        $eventsForFinalDelivery = if ($Mode -eq 'PRODUCTION') { @($events | Select-Object -Skip 1) } else { @($events) }
+        $eventsForFinalDelivery = if ($Mode -eq 'PRODUCTION') { @($events | Select-Object -Skip 1) } else { $events.ToArray() }
         $delivery = Invoke-SfdOperationalDelivery -Configuration $configuration -Paths $paths -Events $eventsForFinalDelivery -ReportPath $reportPath -SummaryTitle ('SoundFlow Desktop - ' + $completionAction.Replace('_', ' ')) -SummaryBody ("Incident: {0}`nDevice: {1}`nEmployee: {2}`nMode: {3}`nDetected targets: {4}`nTargets requiring attention: {5}`nReport persisted locally: yes" -f $incidentId, $context.Device_Name, $context.Full_Name, $Mode, $detectedCount, $failedCount)
         $null = Write-SfdDeliveryOutcomeEvents -IncidentId $incidentId -Mode $Mode -Context $context -Delivery $delivery -Configuration $configuration -Paths $paths -EventPath $eventPath
 

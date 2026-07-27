@@ -48,5 +48,5 @@ function Test-SfdTargetManifest {
             $errors.Add("Target '$($target.target_id)' permits uninstall without a method.")
         }
     }
-    [pscustomobject]@{ Valid = ($errors.Count -eq 0); Errors = @($errors) }
+    [pscustomobject]@{ Valid = ($errors.Count -eq 0); Errors = $errors.ToArray() }
 }

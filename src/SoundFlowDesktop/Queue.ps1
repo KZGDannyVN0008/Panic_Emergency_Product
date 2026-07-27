@@ -21,7 +21,7 @@ function Get-SfdQueueItems {
             })
         }
     }
-    @($items)
+    $items.ToArray()
 }
 
 function Add-SfdQueueRecord {
@@ -116,11 +116,11 @@ function Invoke-SfdQueueRetry {
             $remaining.Add($item)
         }
     }
-    Write-SfdQueueItems -Path $Path -Items @($remaining)
+    Write-SfdQueueItems -Path $Path -Items $remaining.ToArray()
     [pscustomobject]@{
         Processed = $processed
         Delivered = $delivered.Count
         Remaining = $remaining.Count
-        DeliveredEventIds = @($delivered)
+        DeliveredEventIds = $delivered.ToArray()
     }
 }

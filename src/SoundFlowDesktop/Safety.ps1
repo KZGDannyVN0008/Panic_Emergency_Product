@@ -47,13 +47,13 @@ function Test-SfdCleanupPath {
     $reasons = New-Object System.Collections.Generic.List[string]
     if ([string]::IsNullOrWhiteSpace($Path)) {
         $reasons.Add('EMPTY_PATH')
-        return [pscustomobject]@{ Safe = $false; Path = $Path; Reasons = @($reasons) }
+        return [pscustomobject]@{ Safe = $false; Path = $Path; Reasons = $reasons.ToArray() }
     }
     if ($Path.IndexOfAny([char[]]'*?') -ge 0) { $reasons.Add('WILDCARD_PATH') }
     try { $full = [IO.Path]::GetFullPath($Path).TrimEnd('\') }
     catch {
         $reasons.Add('INVALID_PATH')
-        return [pscustomobject]@{ Safe = $false; Path = $Path; Reasons = @($reasons) }
+        return [pscustomobject]@{ Safe = $false; Path = $Path; Reasons = $reasons.ToArray() }
     }
     if ($full -match '^[A-Za-z]:$') { $reasons.Add('DRIVE_ROOT') }
     if (-not (@($ApprovedBases | Where-Object { Test-SfdPathWithinBase -Path $full -BasePath $_ }).Count)) {
@@ -83,5 +83,5 @@ function Test-SfdCleanupPath {
     } elseif (-not $AllowMissing) {
         $reasons.Add('PATH_NOT_FOUND')
     }
-    [pscustomobject]@{ Safe = ($reasons.Count -eq 0); Path = $full; Reasons = @($reasons) }
+    [pscustomobject]@{ Safe = ($reasons.Count -eq 0); Path = $full; Reasons = $reasons.ToArray() }
 }

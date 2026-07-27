@@ -102,7 +102,7 @@ function Remove-SfdCredentialEntries {
             })
         }
     }
-    @($results)
+    $results.ToArray()
 }
 
 function Test-SfdCredentialEntriesAbsent {
@@ -171,7 +171,7 @@ function Get-SfdActiveSyncRoots {
         $full = [IO.Path]::GetFullPath([string]$candidate)
         if (-not $roots.Contains($full)) { $roots.Add($full) }
     }
-    @($roots)
+    $roots.ToArray()
 }
 
 function Invoke-SfdTargetCleanup {
@@ -257,7 +257,7 @@ function Invoke-SfdTargetCleanup {
     $failed = @($actions | Where-Object { $_.Result -in @('FAILED', 'VERIFICATION_FAILED') }).Count
     $protected = @($actions | Where-Object { $_.Result -eq 'PROTECTED' }).Count
     $result = if ($failed -and $failed -lt $actions.Count) { 'PARTIAL_SUCCESS' } elseif ($failed) { 'FAILED' } elseif ($protected) { 'PROTECTED' } else { 'CLEANED' }
-    [pscustomobject]@{ TargetId = $Target.target_id; Result = $result; VerificationStrategy = $Target.verification_strategy; Actions = @($actions) }
+    [pscustomobject]@{ TargetId = $Target.target_id; Result = $result; VerificationStrategy = $Target.verification_strategy; Actions = $actions.ToArray() }
 }
 
 function Invoke-SfdAllowedUninstall {
