@@ -88,9 +88,11 @@ if ($ConnectGoogleSheets) {
 }
 
 # Restrict writable application state to administrators, SYSTEM, and the
-# installing Windows user. The exact ACL command is intentionally explicit.
+# installing Windows user. Use the SID to avoid DOMAIN\username resolution
+# failures on workgroup machines or accounts with non-ASCII characters.
 if ($env:OS -eq 'Windows_NT') {
-    icacls.exe $paths.Data /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\Administrators:(OI)(CI)F' ($env:USERDOMAIN + '\' + $env:USERNAME + ':(OI)(CI)M') /T /C | Out-Null
+    $currentSid = '*' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    icacls.exe $paths.Data /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\Administrators:(OI)(CI)F' ($currentSid + ':(OI)(CI)F') /T /C | Out-Null
 }
 
 $null = Write-SfdLifecycleEvent -Action INSTALL -ProgramDirectory $ProgramDirectory -DataDirectory $DataDirectory

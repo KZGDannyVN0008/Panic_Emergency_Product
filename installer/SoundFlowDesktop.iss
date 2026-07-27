@@ -54,7 +54,7 @@ Type: filesandordirs; Name: "{app}\config"; Check: IsUpdateMode
 Type: filesandordirs; Name: "{app}\assets"; Check: IsUpdateMode
 
 [Run]
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\SoundFlowDesktop.Configure.ps1"" -FullName ""{username}"" -WorkEmail ""{username}@local.invalid"" -Department ""External Tester"" -FinalAction ""NONE"" -LarkWebhookFile ""{tmp}\soundflow-lark-webhook.txt"" -ProgramDirectory ""{app}"" -DataDirectory ""{localappdata}\SoundFlowDesktop"""; StatusMsg: "Creating local configuration and notification settings..."; Flags: runhidden waituntilterminated; Check: not IsUpdateMode
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\SoundFlowDesktop.Configure.ps1"" -FullName ""{code:GetFullName}"" -WorkEmail ""{code:GetWorkEmail}"" -Department ""{code:GetDepartment}"" -FinalAction ""{code:GetFinalAction}"" -ConnectGoogleSheets -LarkWebhookFile ""{tmp}\soundflow-lark-webhook.txt"" -ProgramDirectory ""{app}"" -DataDirectory ""{localappdata}\SoundFlowDesktop"""; StatusMsg: "Configuring SoundFlow Desktop — please authorize Google Sheets in your browser if a sign-in page opens..."; Flags: runhidden waituntilterminated; Check: not IsUpdateMode
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\SoundFlowDesktop.ps1"" -ProgramDirectory ""{app}"" -DataDirectory ""{localappdata}\SoundFlowDesktop"""; Description: "Open SoundFlow Desktop"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
@@ -64,15 +64,128 @@ Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile
 var
   UpdateMode: Boolean;
   RemoveLocalData: Boolean;
+  UserInfoPage: TInputQueryWizardPage;
+  FinalActionPage: TInputOptionWizardPage;
 
 procedure InitializeWizard;
 begin
   UpdateMode := ExpandConstant('{param:UPDATE|0}') = '1';
+
+  if not UpdateMode then
+  begin
+    UserInfoPage := CreateInputQueryPage(
+      wpWelcome,
+      'User Information',
+      'Enter your information to configure SoundFlow Desktop.',
+      'This information identifies your device in operational reports. The Lark webhook is pre-configured.');
+    UserInfoPage.Add('Full Name:', False);
+    UserInfoPage.Add('Work Email:', False);
+    UserInfoPage.Add('Department:', False);
+
+    FinalActionPage := CreateInputOptionPage(
+      UserInfoPage.ID,
+      'Post-Operation Action',
+      'Select what should happen after a Production run completes.',
+      'Post-operation action:',
+      True, False);
+    FinalActionPage.Add('No action — keep the session active (NONE)');
+    FinalActionPage.Add('Log out the current user (LOGOUT)');
+    FinalActionPage.Add('Shut down the computer (SHUTDOWN)');
+    FinalActionPage.SelectedValueIndex := 0;
+  end;
 end;
 
 function IsUpdateMode: Boolean;
 begin
   Result := UpdateMode;
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  if UpdateMode then
+  begin
+    if Assigned(UserInfoPage) and (PageID = UserInfoPage.ID) then
+      Result := True;
+    if Assigned(FinalActionPage) and (PageID = FinalActionPage.ID) then
+      Result := True;
+  end;
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  Name, Email, Dept: String;
+  AtPos: Integer;
+begin
+  Result := True;
+  if Assigned(UserInfoPage) and (CurPageID = UserInfoPage.ID) then
+  begin
+    Name := Trim(UserInfoPage.Values[0]);
+    Email := Trim(UserInfoPage.Values[1]);
+    Dept := Trim(UserInfoPage.Values[2]);
+    if Name = '' then
+    begin
+      MsgBox('Please enter your full name.', mbError, MB_OK);
+      Result := False;
+      Exit;
+    end;
+    if Email = '' then
+    begin
+      MsgBox('Please enter your work email address.', mbError, MB_OK);
+      Result := False;
+      Exit;
+    end;
+    AtPos := Pos('@', Email);
+    if (AtPos = 0) or (Pos('.', Copy(Email, AtPos + 1, Length(Email))) = 0) then
+    begin
+      MsgBox('Please enter a valid work email address (e.g. name@company.com).', mbError, MB_OK);
+      Result := False;
+      Exit;
+    end;
+    if Dept = '' then
+    begin
+      MsgBox('Please enter your department.', mbError, MB_OK);
+      Result := False;
+      Exit;
+    end;
+  end;
+end;
+
+function GetFullName(Param: String): String;
+begin
+  if Assigned(UserInfoPage) then
+    Result := UserInfoPage.Values[0]
+  else
+    Result := '';
+end;
+
+function GetWorkEmail(Param: String): String;
+begin
+  if Assigned(UserInfoPage) then
+    Result := UserInfoPage.Values[1]
+  else
+    Result := '';
+end;
+
+function GetDepartment(Param: String): String;
+begin
+  if Assigned(UserInfoPage) then
+    Result := UserInfoPage.Values[2]
+  else
+    Result := '';
+end;
+
+function GetFinalAction(Param: String): String;
+begin
+  if Assigned(FinalActionPage) then
+    case FinalActionPage.SelectedValueIndex of
+      1: Result := 'LOGOUT';
+      2: Result := 'SHUTDOWN';
+    else
+      Result := 'NONE';
+    end
+  else
+    Result := 'NONE';
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
