@@ -20,12 +20,12 @@ trap {
     Write-SfdBootstrapLog -DataDirectory $DataDirectory -Action 'INSTALL_CONFIGURATION_FAILED' -Message $_.Exception.Message
     exit 1
 }
-# On re-install, the data directory may still exist with ACLs set by a previous
-# installation. Grant the current user full access BEFORE trying to write any
-# files, so Configure.ps1 is never blocked by leftover permission restrictions.
+# Recover from a previous installation that may have applied overly restrictive
+# ACLs to the data directory. takeown retakes ownership (always allowed for the
+# file owner), then icacls restores inherited permissions so normal access works.
 if ($env:OS -eq 'Windows_NT' -and (Test-Path -LiteralPath $DataDirectory)) {
-    $currentSid = '*' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-    icacls.exe $DataDirectory /grant ($currentSid + ':(OI)(CI)F') /T /C | Out-Null
+    takeown.exe /F $DataDirectory /R /D Y 2>$null | Out-Null
+    icacls.exe $DataDirectory /reset /T /C | Out-Null
 }
 Import-Module (Join-Path $ProgramDirectory 'src\SoundFlowDesktop\SoundFlowDesktop.psd1') -Force
 $paths = Get-SfdPaths -ProgramDirectory $ProgramDirectory -DataDirectory $DataDirectory
@@ -89,13 +89,6 @@ if ($GoogleWebAppUrl) {
 }
 Write-SfdJsonAtomic -Path (Join-Path $paths.Config 'deployment.json') -Value $configuration
 
-# Restrict writable application state to administrators, SYSTEM, and the
-# installing Windows user. Use the SID to avoid DOMAIN\username resolution
-# failures on workgroup machines or accounts with non-ASCII characters.
-if ($env:OS -eq 'Windows_NT') {
-    $currentSid = '*' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-    icacls.exe $paths.Data /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\Administrators:(OI)(CI)F' ($currentSid + ':(OI)(CI)F') /T /C | Out-Null
-}
 
 $null = Write-SfdLifecycleEvent -Action INSTALL -ProgramDirectory $ProgramDirectory -DataDirectory $DataDirectory
 Write-SfdBootstrapLog -DataDirectory $DataDirectory -Action 'INSTALL_CONFIGURATION_COMPLETED'
