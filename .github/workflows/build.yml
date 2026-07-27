@@ -17,11 +17,13 @@ jobs:
       - name: Run safe tests
         shell: powershell
         run: |
+          $ErrorActionPreference = 'Continue'
           $outputPath = Join-Path $env:RUNNER_TEMP 'soundflow-test-output.txt'
           $output = & powershell -NoProfile -ExecutionPolicy Bypass -File tests/run.ps1 *>&1 | Tee-Object -FilePath $outputPath | Out-String
+          $testExitCode = $LASTEXITCODE
           Write-Host $output
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
+          if ($testExitCode -ne 0) {
+            exit $testExitCode
           }
       - name: Publish Windows test diagnostics
         if: failure()
