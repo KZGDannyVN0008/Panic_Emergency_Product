@@ -2,6 +2,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$InnoSetupCompiler,
     [string]$OAuthClientPath,
+    [string]$LarkWebhook = $env:SOUNDFLOW_LARK_WEBHOOK,
+    [switch]$RequireLarkWebhook,
     [string]$SignTool,
     [string]$CertificateThumbprint,
     [string]$TimestampUrl = 'http://timestamp.digicert.com'
@@ -16,6 +18,14 @@ if ($OAuthClientPath) {
     $oauth = Get-Content -LiteralPath $OAuthClientPath -Raw | ConvertFrom-Json
     if (-not $oauth.installed.client_id) { throw 'An installed-desktop Google OAuth client is required.' }
     Copy-Item -LiteralPath $OAuthClientPath -Destination (Join-Path $staging 'google-oauth-client.json') -Force
+}
+if ($LarkWebhook) {
+    if ($LarkWebhook -notmatch '^https://open\.larksuite\.com/open-apis/bot/v2/hook/[A-Za-z0-9-]+$') {
+        throw 'SOUNDFLOW_LARK_WEBHOOK is not a valid Lark custom-bot webhook URL.'
+    }
+    Set-Content -LiteralPath (Join-Path $staging 'lark-webhook.txt') -Value $LarkWebhook -Encoding Ascii
+} elseif ($RequireLarkWebhook) {
+    throw 'SOUNDFLOW_LARK_WEBHOOK must be configured as a GitHub Actions secret for distributable builds.'
 }
 
 try {
@@ -32,4 +42,5 @@ try {
     Write-Host "Built: $setup"
 } finally {
     Remove-Item -LiteralPath (Join-Path $staging 'google-oauth-client.json') -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath (Join-Path $staging 'lark-webhook.txt') -Force -ErrorAction SilentlyContinue
 }

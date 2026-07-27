@@ -1,6 +1,6 @@
 # Security
 
-- Authorized company use only.
+- Authorized device-owner or tester use only.
 - DRY RUN is non-destructive and the default.
 - Production requires UAC, explicit confirmation, and a single-run lock.
 - Cleanup is manifest-bounded and verification-driven.

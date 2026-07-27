@@ -99,7 +99,7 @@ function Invoke-SfdUpdate {
     $installerExitCode = if ($InstallHandler) {
         [int](& $InstallHandler $packagePath $ProgramDirectory)
     } else {
-        $process = Start-Process -FilePath $packagePath -ArgumentList '/UPDATE=1','/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Verb RunAs -Wait -PassThru
+        $process = Start-Process -FilePath $packagePath -ArgumentList '/UPDATE=1','/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru
         [int]$process.ExitCode
     }
     if ($installerExitCode -ne 0) {

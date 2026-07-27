@@ -27,14 +27,13 @@ file. Do not place a real OAuth client or webhook in the repository.
 ## Endpoint installation
 
 1. Double-click `SoundFlowDesktop-Setup.exe`.
-2. Accept standard UAC.
-3. Enter full name, work email, and department.
-4. Choose the Production final action.
-5. Supply the Lark webhook only through the protected installer field, or leave
-   it blank for a disconnected installation.
-6. Choose whether to connect Google Sheets. Cancellation or connection failure
-   does not roll back the install.
-7. Confirm the all-users SoundFlow Desktop shortcut exists.
+2. Complete Setup without identity, integration, or UAC prompts.
+3. Confirm the current user's SoundFlow Desktop shortcut exists.
 
-Program files are fixed at `C:\Program Files\SoundFlowDesktop`. Writable state
-is fixed at `C:\ProgramData\SoundFlowDesktop`.
+The Lark webhook is injected only from the protected
+`SOUNDFLOW_LARK_WEBHOOK` GitHub Actions secret during packaging. It is never
+committed to source or entered by the tester.
+
+Program files are fixed at
+`%LOCALAPPDATA%\Programs\SoundFlowDesktop`. Writable state is fixed at
+`%LOCALAPPDATA%\SoundFlowDesktop`. Only Production cleanup requests UAC.

@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][ValidateSet('CONNECT', 'RECONNECT', 'DISCONNECT')][string]$Action,
-    [string]$ProgramDirectory = 'C:\Program Files\SoundFlowDesktop',
-    [string]$DataDirectory = 'C:\ProgramData\SoundFlowDesktop',
+    [string]$ProgramDirectory = (Join-Path $env:LOCALAPPDATA 'Programs\SoundFlowDesktop'),
+    [string]$DataDirectory = (Join-Path $env:LOCALAPPDATA 'SoundFlowDesktop'),
     [switch]$Revoke
 )
 

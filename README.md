@@ -5,18 +5,21 @@ application. It defaults to a non-destructive DRY RUN. Production requires
 normal UAC elevation and an explicit confirmation that identifies the user,
 device, mode, and requested final system action.
 
-The application installs machine-wide to:
+The application installs for the current Windows user without an installation
+UAC prompt:
 
 ```text
-C:\Program Files\SoundFlowDesktop
+%LOCALAPPDATA%\Programs\SoundFlowDesktop
 ```
 
-Writable configuration, encrypted credentials, logs, reports, queues, and
-state are stored under:
+Writable configuration, DPAPI-protected credentials, logs, reports, queues,
+and state are stored under:
 
 ```text
-C:\ProgramData\SoundFlowDesktop
+%LOCALAPPDATA%\SoundFlowDesktop
 ```
+
+Only authorized Production cleanup requests UAC elevation.
 
 ## Repository layout
 

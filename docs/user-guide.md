@@ -14,4 +14,4 @@ disconnect synchronization, log out, or shut down.
 Production requests standard UAC and displays the device, employee, mode,
 destructive actions, and final system action. Select No to cancel.
 
-Reports are stored under `C:\ProgramData\SoundFlowDesktop\reports`.
+Reports are stored under `%LOCALAPPDATA%\SoundFlowDesktop\reports`.

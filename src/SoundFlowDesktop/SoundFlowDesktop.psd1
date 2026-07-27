@@ -1,6 +1,6 @@
 @{
     RootModule = 'SoundFlowDesktop.psm1'
-    ModuleVersion = '1.0.0'
+    ModuleVersion = '1.0.1'
     GUID = 'd17dd3f1-415b-4816-a9e2-20bdc7932115'
     Author = 'KZG'
     CompanyName = 'KZG'

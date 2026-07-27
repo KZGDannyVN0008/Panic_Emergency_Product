@@ -7,10 +7,10 @@ function Get-SfdApplicationInfo {
     [pscustomobject][ordered]@{
         ProductName = 'SoundFlow Desktop'
         ProductId = 'SoundFlowDesktop'
-        Version = '1.0.0'
+        Version = '1.0.1'
         Publisher = 'KZG'
-        ProgramDirectory = 'C:\Program Files\SoundFlowDesktop'
-        DataDirectory = 'C:\ProgramData\SoundFlowDesktop'
+        ProgramDirectory = (Join-Path $env:LOCALAPPDATA 'Programs\SoundFlowDesktop')
+        DataDirectory = (Join-Path $env:LOCALAPPDATA 'SoundFlowDesktop')
         UpdateRepository = 'KZGDannyVN0008/Panic_Emergency_Product'
     }
 }

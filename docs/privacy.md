@@ -9,5 +9,6 @@ contents, personal file contents, private keys, or cloud file contents.
 Directory scans skip offline placeholders and reparse points.
 
 Local reports, logs, configuration, encrypted credentials, and queues remain
-under ProgramData. Uninstall asks whether to retain or remove them. Retention
-periods and access controls must follow company policy.
+under `%LOCALAPPDATA%\SoundFlowDesktop`. Uninstall asks whether to retain or remove them. Retention
+periods and access controls must follow the developer's test policy and the
+device owner's requirements.

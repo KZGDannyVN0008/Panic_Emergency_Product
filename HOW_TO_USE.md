@@ -17,15 +17,13 @@ chat link. Do not download files with a similar name from another source.
 1. Download `SoundFlowDesktop-Setup.exe` to the computer.
 2. Double-click the installer.
 3. Select **Install**.
-4. Approve the normal Windows User Account Control prompt.
-5. Enter your full name, work email, and department.
-6. Follow the test coordinator's instructions for the final action and
-   optional Lark or Google Sheets connection.
-7. Finish Setup.
-8. Confirm that the **SoundFlow Desktop** shortcut appears on the Desktop.
+4. Finish Setup. It does not ask for identity, Lark, Google, or administrator
+   configuration.
+5. Confirm that the **SoundFlow Desktop** shortcut appears on the Desktop.
 
-SoundFlow Desktop is installed for all users of the computer. Do not move or
-edit its files manually.
+SoundFlow Desktop is installed only for the current Windows user. Installation
+does not request UAC. Production cleanup still requests UAC because Windows
+requires elevation for privileged cleanup.
 
 ## Open the application
 
@@ -84,7 +82,7 @@ shut down after the report and event records have been saved.
 Reports are stored in:
 
 ```text
-C:\ProgramData\SoundFlowDesktop\reports
+%LOCALAPPDATA%\SoundFlowDesktop\reports
 ```
 
 If you cannot open that folder, ask the Windows device owner or IT support to

@@ -5,16 +5,27 @@ param(
     [Parameter(Mandatory = $true)][string]$Department,
     [ValidateSet('NONE', 'LOGOUT', 'SHUTDOWN')][string]$FinalAction = 'LOGOUT',
     [string]$LarkWebhook,
-    [string]$ProgramDirectory = 'C:\Program Files\SoundFlowDesktop',
-    [string]$DataDirectory = 'C:\ProgramData\SoundFlowDesktop',
+    [string]$LarkWebhookFile,
+    [string]$ProgramDirectory = (Join-Path $env:LOCALAPPDATA 'Programs\SoundFlowDesktop'),
+    [string]$DataDirectory = (Join-Path $env:LOCALAPPDATA 'SoundFlowDesktop'),
     [switch]$ConnectGoogleSheets
 )
 
 $ErrorActionPreference = 'Stop'
+$bootstrapPath = Join-Path $ProgramDirectory 'app\SoundFlowDesktop.Bootstrap.ps1'
+if (Test-Path -LiteralPath $bootstrapPath) { . $bootstrapPath }
+Write-SfdBootstrapLog -DataDirectory $DataDirectory -Action 'INSTALL_CONFIGURATION_STARTED'
+trap {
+    Write-SfdBootstrapLog -DataDirectory $DataDirectory -Action 'INSTALL_CONFIGURATION_FAILED' -Message $_.Exception.Message
+    exit 1
+}
 Import-Module (Join-Path $ProgramDirectory 'src\SoundFlowDesktop\SoundFlowDesktop.psd1') -Force
 $paths = Get-SfdPaths -ProgramDirectory $ProgramDirectory -DataDirectory $DataDirectory
 foreach ($directory in @($paths.Config, $paths.Credentials, $paths.Logs, $paths.Reports, $paths.Queue, $paths.State, $paths.Locks)) {
     New-Item -ItemType Directory -Path $directory -Force | Out-Null
+}
+if (-not $LarkWebhook -and $LarkWebhookFile -and (Test-Path -LiteralPath $LarkWebhookFile -PathType Leaf)) {
+    $LarkWebhook = (Get-Content -LiteralPath $LarkWebhookFile -Raw -Encoding Ascii).Trim()
 }
 
 $configuration = [ordered]@{
@@ -52,6 +63,9 @@ if ($LarkWebhook) {
     $protectedWebhook = Protect-SfdDpapiValue -PlainText $LarkWebhook
     Set-Content -LiteralPath (Join-Path $paths.Data $configuration.lark.webhook_dpapi_file) -Value $protectedWebhook -Encoding Ascii
 }
+if ($LarkWebhookFile -and (Test-Path -LiteralPath $LarkWebhookFile)) {
+    Remove-Item -LiteralPath $LarkWebhookFile -Force -ErrorAction SilentlyContinue
+}
 Write-SfdJsonAtomic -Path (Join-Path $paths.Config 'deployment.json') -Value $configuration
 
 if ($ConnectGoogleSheets) {
@@ -80,4 +94,5 @@ if ($env:OS -eq 'Windows_NT') {
 }
 
 $null = Write-SfdLifecycleEvent -Action INSTALL -ProgramDirectory $ProgramDirectory -DataDirectory $DataDirectory
+Write-SfdBootstrapLog -DataDirectory $DataDirectory -Action 'INSTALL_CONFIGURATION_COMPLETED'
 Write-Host 'SoundFlow Desktop configuration completed.'

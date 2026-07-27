@@ -37,10 +37,12 @@ jobs:
           }
       - name: Locate Inno Setup
         shell: powershell
+        env:
+          SOUNDFLOW_LARK_WEBHOOK: ${{ secrets.SOUNDFLOW_LARK_WEBHOOK }}
         run: |
           $compiler = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path -LiteralPath $compiler)) { throw 'Inno Setup 6 is unavailable.' }
-          .\installer\build.ps1 -InnoSetupCompiler $compiler
+          .\installer\build.ps1 -InnoSetupCompiler $compiler -RequireLarkWebhook
       - name: Upload unsigned artifact for signing review
         uses: actions/upload-artifact@v4
         with:

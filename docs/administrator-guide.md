@@ -2,11 +2,11 @@
 
 ## Configuration
 
-`C:\ProgramData\SoundFlowDesktop\config\deployment.json` stores non-secret
+`%LOCALAPPDATA%\SoundFlowDesktop\config\deployment.json` stores non-secret
 settings. Lark and Google token material is separately DPAPI-protected for the
 authorizing Windows user under `credentials`.
 
-To rotate the Lark webhook, rerun Setup and enter the replacement value. Do not
+To rotate the Lark webhook, update the protected GitHub Actions secret and publish a replacement Setup. Do not
 paste secrets into logs, tickets, screenshots, or command history.
 
 ## Target governance

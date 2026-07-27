@@ -1,12 +1,21 @@
 [CmdletBinding()]
 param(
-    [string]$ProgramDirectory = 'C:\Program Files\SoundFlowDesktop',
-    [string]$DataDirectory = 'C:\ProgramData\SoundFlowDesktop'
+    [string]$ProgramDirectory = (Join-Path $env:LOCALAPPDATA 'Programs\SoundFlowDesktop'),
+    [string]$DataDirectory = (Join-Path $env:LOCALAPPDATA 'SoundFlowDesktop')
 )
 
 $ErrorActionPreference = 'Stop'
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
+$bootstrapPath = Join-Path $ProgramDirectory 'app\SoundFlowDesktop.Bootstrap.ps1'
+if (Test-Path -LiteralPath $bootstrapPath) { . $bootstrapPath }
+try {
+    Write-SfdBootstrapLog -DataDirectory $DataDirectory -Action 'APP_OPENED'
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+} catch {
+    Write-SfdBootstrapLog -DataDirectory $DataDirectory -Action 'APP_OPEN_FAILED' -Message $_.Exception.Message
+    Show-SfdBootstrapError -Message $_.Exception.Message
+    exit 1
+}
 $iconPath = Join-Path $ProgramDirectory 'assets\SoundFlowDesktop.ico'
 
 function New-SfdButton {
@@ -31,7 +40,7 @@ function Start-SfdWorker {
     if ($Mode -eq 'PRODUCTION') {
         Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -Verb RunAs
     } else {
-        Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments
+        Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -WindowStyle Hidden
     }
 }
 
@@ -64,7 +73,7 @@ $runButton = New-SfdButton -Text 'RUN' -Top 112
 $updateButton.Add_Click({
     $updater = Join-Path $ProgramDirectory 'app\SoundFlowDesktop.Updater.ps1'
     $arguments = '-NoProfile -ExecutionPolicy Bypass -File "' + $updater + '" -ProgramDirectory "' + $ProgramDirectory + '" -DataDirectory "' + $DataDirectory + '"'
-    Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -Verb RunAs
+    Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -WindowStyle Hidden
 })
 $runButton.Add_Click({ Show-SfdRunDialog })
 $form.Controls.AddRange(@($updateButton, $runButton))

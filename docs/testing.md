@@ -33,7 +33,7 @@ Run the following only in disposable Windows 10 and Windows 11 snapshots:
 - Production confirmation cancellation;
 - protected/broad/reparse/active-sync path rejection;
 - logout and shutdown only after report/event/queue persistence;
-- uninstall retain/remove choices and all-users shortcut removal.
+- uninstall retain/remove choices and current-user shortcut removal.
 
 Record the VM snapshot, OS build, tester, incident ID, expected result, actual
 result, and evidence for each case.

@@ -330,15 +330,15 @@ function Start-SfdIncident {
         $events.Add($startEvent)
         Write-SfdLocalEvents -Path $eventPath -Events @($startEvent)
 
-        if ($Mode -eq 'PRODUCTION' -and ($configuration.lark.enabled -or $configuration.google_sheets.enabled)) {
+        if ($configuration.lark.enabled -or $configuration.google_sheets.enabled) {
             $startedReport = Join-Path $paths.Reports ($incidentId + '.started.txt')
             Set-Content -LiteralPath $startedReport -Value @(
-                'SoundFlow Desktop Production started',
+                ('SoundFlow Desktop ' + $Mode + ' started'),
                 'Incident ID: ' + $incidentId,
                 'Device: ' + $context.Device_Name,
                 'Employee: ' + $context.Full_Name
             ) -Encoding UTF8
-            $startedDelivery = Invoke-SfdOperationalDelivery -Configuration $configuration -Paths $paths -Events @($startEvent) -ReportPath $startedReport -SummaryTitle 'SoundFlow Desktop - PRODUCTION STARTED' -SummaryBody ("Incident: {0}`nDevice: {1}`nEmployee: {2}`nStatus: cleanup is starting" -f $incidentId, $context.Device_Name, $context.Full_Name) -SummaryOnly
+            $startedDelivery = Invoke-SfdOperationalDelivery -Configuration $configuration -Paths $paths -Events @($startEvent) -ReportPath $startedReport -SummaryTitle ('SoundFlow Desktop - ' + $startAction.Replace('_', ' ')) -SummaryBody ("Incident: {0}`nDevice: {1}`nUser: {2}`nMode: {3}`nStatus: run started" -f $incidentId, $context.Device_Name, $context.Windows_Username, $Mode) -SummaryOnly
             $null = Write-SfdDeliveryOutcomeEvents -IncidentId $incidentId -Mode $Mode -Context $context -Delivery $startedDelivery -Configuration $configuration -Paths $paths -EventPath $eventPath
         }
 
