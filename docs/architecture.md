@@ -26,8 +26,8 @@ Runtime state never lives beside program files.
 | Prior implementation | Canonical destination |
 |---|---|
 | Monolithic `EmergencyClean.ps1` | `Incident`, `Discovery`, `Safety`, `Cleanup`, `Reporting`, and integration modules |
-| `GoogleSheets.ps1` | `GoogleSheets.psm1` |
-| `Update-ESD.ps1` | `Updater.psm1` and `SoundFlowDesktop.Updater.ps1` |
+| `GoogleSheets.ps1` | Private `GoogleSheets.ps1` component under the canonical module |
+| `Update-ESD.ps1` | Private `Updater.ps1` component and `SoundFlowDesktop.Updater.ps1` entry point |
 | Batch installer/uninstaller | `installer/SoundFlowDesktop.iss` |
 | Hardcoded target arrays | `config/targets.windows.v1.json` |
 | Separate summary/detail queues | One destination-tagged JSONL queue |
