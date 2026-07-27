@@ -28,8 +28,7 @@ jobs:
         run: |
           $outputPath = Join-Path $env:RUNNER_TEMP 'soundflow-test-output.txt'
           if (Test-Path -LiteralPath $outputPath) {
-            Get-Content -LiteralPath $outputPath | Select-Object -Last 30 | ForEach-Object {
-              $annotation = ([string]$_).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
-              Write-Host "::error file=tests/run.ps1,title=Windows test failure::$annotation"
-            }
+            $tail = (Get-Content -LiteralPath $outputPath | Select-Object -Last 30) -join "`n"
+            $annotation = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error file=tests/run.ps1,title=Windows test failure::$annotation"
           }
