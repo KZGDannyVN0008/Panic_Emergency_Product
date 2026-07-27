@@ -20,3 +20,33 @@ $moduleFiles = @(
 foreach ($moduleFile in $moduleFiles) {
     . (Join-Path $moduleRoot $moduleFile)
 }
+
+Export-ModuleMember -Function @(
+    'Get-SfdApplicationInfo',
+    'Get-SfdPaths',
+    'Read-SfdJson',
+    'Write-SfdJsonAtomic',
+    'Protect-SfdSecretText',
+    'Protect-SfdDpapiValue',
+    'Unprotect-SfdDpapiValue',
+    'Resolve-SfdUserCredentialPath',
+    'Import-SfdDeploymentConfiguration',
+    'Import-SfdTargetManifest',
+    'Test-SfdTargetManifest',
+    'Resolve-SfdTargetPath',
+    'Test-SfdCleanupPath',
+    'New-SfdEvent',
+    'Add-SfdQueueRecord',
+    'Invoke-SfdQueueRetry',
+    'Invoke-SfdDiscovery',
+    'Invoke-SfdTargetCleanup',
+    'New-SfdTextReport',
+    'Invoke-SfdLarkSummary',
+    'Invoke-SfdLarkReportUpload',
+    'Connect-SfdGoogleSheets',
+    'Disconnect-SfdGoogleSheets',
+    'Write-SfdGoogleSheetEvents',
+    'Invoke-SfdUpdate',
+    'Write-SfdLifecycleEvent',
+    'Start-SfdIncident'
+)
